@@ -16,10 +16,16 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
-from testing.views import NewsAPIView
+from django.urls import path, include
+from testing.views import *
+from rest_framework import routers
+
+router = routers.SimpleRouter()
+router.register(r"news", NewsViewSet)
 
 urlpatterns = [
-    path("admin/", admin.site.urls), 
-    path("api/v1/Newslist", NewsAPIView.as_view())
-               ]
+    path("admin/", admin.site.urls),
+    path("api/v1/", include(router.urls)),
+    # path("api/v1/Newslist", NewsViewSet.as_view()),
+    # path("api/v1/Newslist/<int:pk>/", NewsAPIUpdate.as_view()),
+]
