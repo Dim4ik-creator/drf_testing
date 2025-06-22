@@ -14,24 +14,13 @@ class NewsViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
+        # if self.request.user.is_authenticated:
         serializer.save(user=self.request.user)
+        # else:
+        #     pass
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
-# class NewsAPIList(generics.ListCreateAPIView):
-#     queryset = News.objects.all()
-#     serializer_class = NewsSerializer
-
-
-# class NewsAPIUpdate(generics.UpdateAPIView):
-#     queryset = News.objects.all()
-#     serializer_class = NewsSerializer
-
-
-# class NewsAPIDetailNView(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = News.objects.all()
-#     serializer_class = NewsSerializer

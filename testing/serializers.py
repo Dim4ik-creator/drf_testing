@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import News, User
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
 class NewsSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
@@ -13,7 +15,12 @@ class NewsSerializer(serializers.Serializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     def create(self, validated_data):
-        return News.objects.create(**validated_data)
+        user_instance = validated_data.pop('user', None)
+
+        if user_instance:
+            return News.objects.create(user=user_instance, **validated_data)
+        else:
+            raise serializers.ValidationError("Пользователь обязателен для создания новости.")
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get("title", instance.title)
@@ -22,7 +29,5 @@ class NewsSerializer(serializers.Serializer):
         instance.is_published = validated_data.get(
             "is_published", instance.is_published
         )
-        # if 'user' in validated_data:
-        #     instance.user = validated_data.get('user')
         instance.save()
         return instance
