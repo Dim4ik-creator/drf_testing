@@ -12,15 +12,36 @@ class NewsDocument(Document):
             "raw": fields.KeywordField(),
             "suggest": fields.CompletionField(),  # Для автодополнения (опционально)
         },
+        analyzer='russian_analyzer'
     )
-    content = fields.TextField(attr="content")
+    content = fields.TextField(attr="content", analyzer='russian_analyzer')
     time_create = fields.DateField(attr="time_create")
     time_update = fields.DateField(attr="time_update")
     user = fields.IntegerField(attr="user.id")
 
     class Index:
-        name = "news"
-        settings = {"number_of_shards": 1, "number_of_replicas": 0}
+        name = 'news' 
+        settings = {
+            'number_of_shards': 1,
+            'number_of_replicas': 0,
+            'analysis': { 
+                'filter': {
+                    'russian_stemmer': {
+                        'type': 'snowball',
+                        'language': 'Russian'
+                    }
+                },
+                'analyzer': {
+                    'russian_analyzer': {
+                        'tokenizer': 'standard',
+                        'filter': [
+                            'lowercase',
+                            'russian_stemmer'
+                        ]
+                    }
+                }
+            }
+        }
 
     class Django:
         model = News

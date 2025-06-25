@@ -10,12 +10,13 @@ from rest_framework.permissions import IsAuthenticated
 from elasticsearch_dsl import Q
 from rest_framework.pagination import PageNumberPagination
 
+
 class NewsListView(generics.ListCreateAPIView):
     serializer_class = NewsSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return News.objects.filter(author=self.request.user).order_by("-created_at")
+        return News.objects.filter().order_by("-created_at")
 
     def list(self, request, *args, **kwargs):
         search_query = request.query_params.get("search", None)
@@ -25,7 +26,12 @@ class NewsListView(generics.ListCreateAPIView):
             s = (
                 NewsDocument.search()
                 .query(
-                    Q("multi_match", query=search_query, fields=["title", "content"])
+                    Q(
+                        "multi_match",
+                        query=search_query,
+                        fields=["title", "content"],
+                        fuzziness="AUTO",
+                    )
                 )
                 .filter("term", user=user.id)
             )
@@ -92,10 +98,12 @@ class NewsListView(generics.ListCreateAPIView):
             serializer = self.get_serializer(queryset, many=True)
             return Response(serializer.data)
 
+
 class NewsAPIListPagination(PageNumberPagination):
     page_size = 10
-    page_size_query_param = 'page_size'
+    page_size_query_param = "page_size"
     max_page_size = 1000
+
 
 class NewsViewSet(viewsets.ModelViewSet):
     queryset = News.objects.all()
