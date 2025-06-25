@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "testing",
+    "django_elasticsearch_dsl",
     "corsheaders",
     "rest_framework",
     "rest_framework.authtoken",
@@ -92,7 +93,11 @@ DATABASES = {
     }
 }
 
-
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': 'http://localhost:9200'
+    }
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -141,6 +146,8 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 10
 }
 
 SIMPLE_JWT = {
