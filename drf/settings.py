@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'django_elasticsearch_dsl',
     "testing",
     "corsheaders",
     "rest_framework",
@@ -92,6 +93,11 @@ DATABASES = {
     }
 }
 
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': 'http://localhost:9200'
+    }
+}
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -130,9 +136,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 10,
+
     "DEFAULT_RENDERER_CLASSES": [
+        
         "rest_framework.renderers.JSONRenderer",
-        # BrowsableAPIRenderer лучше отключать в production
         "rest_framework.renderers.BrowsableAPIRenderer",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
