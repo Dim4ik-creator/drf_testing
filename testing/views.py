@@ -36,7 +36,9 @@ class NewsViewSet(viewsets.ModelViewSet):
                     Q(
                         "multi_match",
                         query=search_query,
-                        fields=["title", "content"],
+                        fields=[
+                            "title",
+                        ],
                         fuzziness="AUTO",  # Автоматическая нечеткость для опечаток
                     )
                 )
