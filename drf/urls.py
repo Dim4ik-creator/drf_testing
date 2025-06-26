@@ -9,7 +9,7 @@ from rest_framework_simplejwt.views import (
 )
 
 router = routers.SimpleRouter()
-router.register(r"news", NewsViewSet)
+router.register(r"news", NewsViewSet, basename="news")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
