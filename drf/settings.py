@@ -1,6 +1,6 @@
 from pathlib import Path
-import os  
-from datetime import timedelta  
+import os
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,7 +21,6 @@ AUTH_USER_MODEL = "testing.User"
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
-
 ]
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -30,18 +29,19 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'django_elasticsearch_dsl',
-    "testing",
+    "django_elasticsearch_dsl",
     "corsheaders",
     "rest_framework",
     "rest_framework.authtoken",
     "djoser",
-    "rest_framework_simplejwt", 
+    "rest_framework_simplejwt",
+    "testing",
+    'django_celery_results',
 ]
 
 MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -52,7 +52,7 @@ MIDDLEWARE = [
 
 
 CORS_ALLOWED_ORIGINS = os.environ.get(
-    "CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000"
+    "CORS_ALLOWED_ORIGINS", "http://localhost:5000, http://127.0.0.1:5000"
 ).split(",")
 CORS_ALLOW_ALL_ORIGINS = (
     os.environ.get("CORS_ALLOW_ALL_ORIGINS", "False").lower() == "False"
@@ -68,7 +68,7 @@ TEMPLATES = [
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
-                "django.template.context_processors.debug",  
+                "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
@@ -93,12 +93,14 @@ DATABASES = {
     }
 }
 
-ELASTICSEARCH_DSL = {
-    'default': {
-        'hosts': 'http://localhost:9200'
-    }
-}
 
+ELASTICSEARCH_DSL = {"default": {"hosts": "http://localhost:9200"}}
+
+CELERY_BROKER_URL = "redis://redis:6379/0"
+CELERY_ACCEPT_CONTENT = ["json","pickle"]
+CELERY_RESULT_BACKEND = "redis://redis:6379/0"
+CELERY_TASK_SERIALIZER = "pickle"
+CELERY_RESULT_SERIALIZER = 'pickle'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -114,7 +116,6 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
-
 
 
 LANGUAGE_CODE = "ru"  # Используйте 'ru-RU' если хотите более специфичный locale
@@ -136,11 +137,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 10,
-
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "PAGE_SIZE": 10,
     "DEFAULT_RENDERER_CLASSES": [
-        
         "rest_framework.renderers.JSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",
     ],

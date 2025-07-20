@@ -2,18 +2,31 @@ from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import permissions
 
 from elasticsearch_dsl import Q
 
 from .models import News
 from .serializers import NewsSerializer
 from .documents import NewsDocument
-
+from .tasks import CreatingNews
+import asyncio
 
 class NewsAPIListPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = "page_size"
     max_page_size = 1000
+
+
+class ParseNewsAPIView(APIView):
+    # permission_classes = [permissions.AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        CreatingNews.delay()  # запускаем парсинг в фоне
+        return Response(
+            {"detail": "Задача парсинга запущена."}
+        )
 
 
 class NewsViewSet(viewsets.ModelViewSet):
