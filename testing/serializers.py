@@ -4,9 +4,10 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+
 class NewsSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    title = serializers.CharField(max_length=50)
+    title = serializers.CharField(max_length=255)
     content = serializers.CharField()
     time_create = serializers.DateTimeField(read_only=True)
     time_update = serializers.DateTimeField(read_only=True)
@@ -15,12 +16,14 @@ class NewsSerializer(serializers.Serializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     def create(self, validated_data):
-        user_instance = validated_data.pop('user', None)
+        user_instance = validated_data.pop("user", None)
 
         if user_instance:
             return News.objects.create(user=user_instance, **validated_data)
         else:
-            raise serializers.ValidationError("Пользователь обязателен для создания новости.")
+            raise serializers.ValidationError(
+                "Пользователь обязателен для создания новости."
+            )
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get("title", instance.title)

@@ -8,7 +8,7 @@ from aiohttp import ClientTimeout
 BASE_URL = "https://rscf.ru"
 START_URL = f"{BASE_URL}/news/release/"
 HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
-PAGES_TO_PARSE = 10
+PAGES_TO_PARSE = 7
 MAX_CONCURRENT_REQUESTS = 3
 
 
@@ -67,7 +67,7 @@ async def parse_articles():
     ssl_context.verify_mode = ssl.CERT_NONE
 
     timeout = aiohttp.ClientTimeout(total=60, connect=10, sock_read=30)
-    connector = aiohttp.TCPConnector(ssl=ssl_context) 
+    connector = aiohttp.TCPConnector(ssl=ssl_context,limit=10) 
 
     # Это ограничит количество одновременно выполняющихся задач
     semaphore = asyncio.Semaphore(MAX_CONCURRENT_REQUESTS)
@@ -101,6 +101,5 @@ async def parse_articles():
 
         articles_data = [article for article in results if article is not None]
 
-    print(f"Всего обработано статей: {len(articles_data)}")
     return articles_data
 

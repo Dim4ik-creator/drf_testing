@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     "djoser",
     "rest_framework_simplejwt",
     "testing",
-    'django_celery_results',
+    # 'django_celery_results',
 ]
 
 MIDDLEWARE = [
@@ -96,11 +96,11 @@ DATABASES = {
 
 ELASTICSEARCH_DSL = {"default": {"hosts": "http://localhost:9200"}}
 
-CELERY_BROKER_URL = "redis://redis:6379/0"
-CELERY_ACCEPT_CONTENT = ["json","pickle"]
-CELERY_RESULT_BACKEND = "redis://redis:6379/0"
-CELERY_TASK_SERIALIZER = "pickle"
-CELERY_RESULT_SERIALIZER = 'pickle'
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = 'json'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
