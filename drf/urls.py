@@ -20,5 +20,6 @@ urlpatterns = [
     path("api/v1/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/v1/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/v1/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
-    path("start-parsing/", ParseNewsAPIView.as_view(), name='start-parsing')
+    path("start-parsing/", ParseNewsAPIView.as_view(), name="start-parsing"),
+    path("api/v1/transcribe/", NewsVoiseTranscribe.as_view(), name="transcribe"),
 ]

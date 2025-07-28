@@ -3,15 +3,17 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.decorators import action
+from rest_framework.parsers import MultiPartParser, FormParser
 
 from elasticsearch_dsl import Q, Search
+
+import os
+import tempfile
 
 from .models import News
 from .serializers import NewsSerializer
 from .documents import NewsDocument
-from .tasks import CreatingNews
-
+from .tasks import CreatingNews, transcribe_audio
 
 class NewsAPIListPagination(PageNumberPagination):
     page_size = 10
@@ -19,11 +21,57 @@ class NewsAPIListPagination(PageNumberPagination):
     max_page_size = 1000
 
 
+class NewsVoiseTranscribe(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser] # Разрешает принимать FormData и файлы
+
+    def post(self, request, *args, **kwargs):
+        audio_file = request.FILES.get('audio_file') # 'audio_file' - это имя поля из FormData на фронтенде
+
+        if not audio_file:
+            return Response(
+                {"detail": "Аудиофайл не предоставлен."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Создаем временный файл для сохранения аудио
+        # NamedTemporaryFile гарантирует уникальное имя и автоматическое удаление
+        # после закрытия файла, но мы удалим его вручную в Celery-задаче.
+        try:
+            # Используем NamedTemporaryFile с суффиксом, чтобы сохранить расширение
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.webm') as temp_audio_file:
+                for chunk in audio_file.chunks():
+                    temp_audio_file.write(chunk)
+                temp_audio_file_path = temp_audio_file.name
+            
+            # Запускаем Celery-задачу для распознавания
+            task_result = transcribe_audio.delay(temp_audio_file_path)
+            result = task_result.get(timeout=360)
+
+            if result.get("status") == "success":
+                return Response({"text": result.get("text")}, status=status.HTTP_200_OK)
+            else:
+                return Response(
+                    {"detail": result.get("text", "Ошибка распознавания речи.")},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+
+        except Exception as e:
+            # Если возникла ошибка, убедимся, что временный файл удален
+            if 'temp_audio_file_path' in locals() and os.path.exists(temp_audio_file_path):
+                os.remove(temp_audio_file_path)
+            return Response(
+                {"detail": f"Ошибка обработки аудио: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
 class ParseNewsAPIView(APIView):
     # permission_classes = [permissions.AllowAny]
 
     def post(self, request, *args, **kwargs):
-        CreatingNews.delay()  # запускаем парсинг в фоне
+        page_to_parse = 5
+        CreatingNews.delay(page_to_parse)  # запускаем парсинг в фоне
         return Response({"detail": "Задача парсинга запущена."})
 
 
