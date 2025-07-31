@@ -57,6 +57,7 @@ async def extract_article_content(session, article_url):
     return {
         "title": title_text,
         "content": full_text_content,
+        "source_url": article_url
     }
 
 
