@@ -8,7 +8,7 @@ User = get_user_model()
 class NewsSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     title = serializers.CharField(max_length=255)
-    source_url = serializers.URLField(max_length=500)
+    source_url = serializers.URLField(max_length=500, allow_null=True, required=False)
     content = serializers.CharField()
     time_create = serializers.DateTimeField(read_only=True)
     time_update = serializers.DateTimeField(read_only=True)
