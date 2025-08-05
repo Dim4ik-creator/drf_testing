@@ -211,8 +211,8 @@ REST_AUTH = {
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "APP": {
-            'client_id': os.environ.get('GOOGLE_OAUTH_CLIENT_ID'),
-            'secret': os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET'), 
+            # Здесь должен быть 'client_id'
+            # 'secret'
             "key": "",
         },
         "SCOPE": [
@@ -256,5 +256,3 @@ LOGGING = {
         },
     },
 }
->>>>>>> 59de289 (changes)
->>>>>>> 65eed9c (changes)
