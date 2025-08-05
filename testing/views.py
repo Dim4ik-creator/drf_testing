@@ -4,8 +4,10 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
-
+from django.contrib.auth import get_user_model
+from firebase_admin import auth as firebase_auth, credentials, initialize_app
 from elasticsearch_dsl import Q, Search
+from rest_framework_simplejwt.tokens import RefreshToken
 
 import os
 import tempfile
@@ -188,3 +190,81 @@ class NewsViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+
+cred = credentials.Certificate("C:\\Users\\Дмитрий\\VS\\rest_training\\drf\\testing\\drf-aouth-firebase-adminsdk-fbsvc-b4c5ed1091.json")
+if not cred:
+    print(f"Файл serviceAccountKey.json не найден по пути: {cred}. Firebase Admin SDK не будет инициализирован.")
+
+    try:
+        initialize_app(cred)
+        print("Firebase Admin SDK успешно инициализирован в AppConfig.")
+    except Exception as e:
+        print(f"Ошибка инициализации Firebase Admin SDK в AppConfig: {e}")
+else:
+    print("Firebase Admin SDK уже инициализирован. Пропускаем повторную инициализацию.")
+
+User = get_user_model()
+initialize_app(cred, "testing")
+
+class FirebaseLoginView(APIView):
+    # Эти классы могут быть необходимы, если вы хотите, чтобы этот View был доступен
+    # без предварительной аутентификации.
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request, *args, **kwargs):
+        """
+        Верифицирует Firebase ID Token и возвращает JWT-токены.
+        """
+        id_token = request.data.get("idToken")
+
+        if not id_token:
+            print("Получен запрос на FirebaseLoginView без ID Token.")
+            return Response(
+                {"error": "ID Token is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # Верификация токена Firebase
+            # Firebase Admin SDK должен быть инициализирован до этого вызова
+            decoded_token = firebase_auth.verify_id_token(id_token)
+            uid = decoded_token.get("uid")
+            email = decoded_token.get("email")
+            
+            print(f"Firebase ID Token успешно верифицирован для UID: {uid}, Email: {email}")
+
+            # Проверка, существует ли пользователь в Django
+            user, created = User.objects.get_or_create(email=email)
+            if created:
+                # Если пользователь новый, установите ему имя и другие поля
+                user.username = uid # Можно использовать email или сгенерировать уникальное имя
+                user.save()
+                print(f"Новый пользователь Django создан: {user.username} ({user.email})")
+            else:
+                print(f"Существующий пользователь Django найден: {user.username} ({user.email})")
+
+            # Генерация JWT-токенов
+            refresh = RefreshToken.for_user(user)
+            print(f"JWT-токены сгенерированы для пользователя: {user.username}")
+            
+            return Response({
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+            })
+
+        except firebase_auth.InvalidIdTokenError as e:
+            # Эта ошибка возникает, если токен недействителен (истек, подделан и т.д.)
+            print(f"Ошибка верификации Firebase ID Token: {e}")
+            return Response(
+                {"error": f"Invalid Firebase ID token: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST # Или HTTP_401_UNAUTHORIZED, в зависимости от политики
+            )
+        except Exception as e:
+            # Ловим любые другие неожиданные ошибки
+            print("Непредвиденная ошибка в FirebaseLoginView:") # Используем exception для вывода полного traceback
+            return Response(
+                {"error": "Непредвиденная ошибка сервера."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

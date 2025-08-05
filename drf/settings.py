@@ -185,10 +185,6 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer",
     "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
 
 SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
@@ -207,12 +203,14 @@ REST_AUTH = {
     "PASSWORD_RESET_SERIALIZER": "dj_rest_auth.serializers.PasswordResetSerializer",
     "PASSWORD_RESET_CONFIRM_SERIALIZER": "dj_rest_auth.serializers.PasswordResetConfirmSerializer",
 }
-
+from dotenv import load_dotenv
+load_dotenv() 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "APP": {
-            # Здесь должен быть 'client_id'
-            # 'secret'
+            'client_id': os.environ.get('GOOGLE_OAUTH_CLIENT_ID'), 
+            # Получаем SECRET из переменной окружения
+            'secret': os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET'), 
             "key": "",
         },
         "SCOPE": [
