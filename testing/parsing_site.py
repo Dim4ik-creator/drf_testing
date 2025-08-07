@@ -162,23 +162,20 @@ async def parsing_all():
     try:
         print("Начинаем парсинг sibac.info...")
         sibac_articles = await sibac_parser.parse(page_to_parse=2)
-        print(
-            f"Парсинг sibac.info завершён. Найдено {len(sibac_articles)} статей. {type(sibac_articles)}"
-        )
+
     except Exception as sibac_e:
         print(f"Ошибка во время парсинга научных статей:{sibac_e}")
 
     try:
         print("\nНачинаем парсинг rscf.ru...")
         rscf_articles = await rscf_parser.parse(page_to_parse=2)
-        print(
-            f"Парсинг rscf.ru завершён. Найдено {len(rscf_articles)} статей. {type(rscf_articles)}"
-        )
+
     except Exception as rscf_e:
         print(f"Ошибка во время парсинга сайта РНФ:{rscf_e}")
     all_data = sibac_articles + rscf_articles
+
     return all_data
 
 
-if __name__ == "__main__":
-    print(asyncio.run(parsing_all()))
+# if __name__ == "__main__":
+#     print(asyncio.run(parsing_all()))
