@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from pydub import AudioSegment
 
-from .parsing_site import parse_articles
+from .parsing_site import parsing_all
 from .models import News
 
 import whisperx
@@ -23,7 +23,7 @@ def CreatingNews(page_to_parse):
 
         # Вызываем асинхронную функцию напрямую с await
         try:
-            parsed_articles = asyncio.run(parse_articles(page_to_parse))
+            parsed_articles = asyncio.run(parsing_all())
         except asyncio.TimeoutError as e:
             logger.warning(
                 f"[Celery] Таймаут во время парсинга: {e}. Повторная попытка..."

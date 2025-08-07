@@ -22,4 +22,5 @@ urlpatterns = [
     path("api/v1/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
     path("start-parsing/", ParseNewsAPIView.as_view(), name="start-parsing"),
     path("api/v1/transcribe/", NewsVoiseTranscribe.as_view(), name="transcribe"),
+    path("api/v1/auth/firebase/", FirebaseLoginView.as_view(), name="fire-base"),
 ]
